@@ -1,6 +1,6 @@
 require 'tokyotyrant'
 
-module Juno
+module Moneta
   module Adapters
     class TokyoTyrant < Base
       def initialize(options = {})

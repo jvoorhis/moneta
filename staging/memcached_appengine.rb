@@ -1,6 +1,6 @@
 require 'appengine/memcache'
 
-module Juno
+module Moneta
   module Adapters
     # Memcached backend (using gem appengine-apis)
     # @api public
