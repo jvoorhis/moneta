@@ -1,7 +1,8 @@
 module Moneta
   # @api private
   class OptionMerger < Wrapper
-    METHODS = [:key?, :load, :store, :delete, :increment, :clear].freeze
+    METHODS = [:key?, :load, :load_multi, :store, :store_multi,
+               :delete, :delete_multi, :increment, :clear].freeze
 
     attr_reader :default_options
 

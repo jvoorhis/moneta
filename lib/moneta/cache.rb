@@ -61,10 +61,20 @@ module Moneta
       value
     end
 
+    # (see Proxy#load_multi)
+    def load_multi(keys, options = {})
+    end
+
     # (see Proxy#store)
     def store(key, value, options = {})
       @cache.store(key, value, options)
       @backend.store(key, value, options)
+    end
+
+    # (see Proxy#store_multi)
+    def store_multi(entries, options = {})
+      @cache.store_multi(entries, options)
+      @backend.store_multi(entries, options)
     end
 
     # (see Proxy#increment)
@@ -77,6 +87,12 @@ module Moneta
     def delete(key, options = {})
       @cache.delete(key, options)
       @backend.delete(key, options)
+    end
+
+    # (see Proxy#delete_multi)
+    def delete_multi(keys, options = {})
+      @cache.delete_multi(keys, options)
+      @backend.delete_multi(keys, options)
     end
 
     # (see Proxy#clear)

@@ -28,6 +28,15 @@ module Moneta
         end
       end
 
+      # (see Proxy#load_multi)
+      def load_multi(keys, options = {})
+        result = @cache.get_multi(*keys)
+        result.each do |key, value|
+          store(key, value, options)
+        end if options.include?(:expires)
+        result
+      end
+
       # (see Proxy#store)
       def store(key, value, options = {})
         @cache.set(key, value, expires_value(options) || nil, :raw => true)

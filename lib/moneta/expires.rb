@@ -32,6 +32,31 @@ module Moneta
       value
     end
 
+    # (see Proxy#load_multi)
+    def load_multi(keys, options = {})
+      return super if options.include?(:raw)
+      now = Time.now.to_i
+      new_expires = options.include?(:expires) && (options = options.dup; options.delete(:expires))
+      new_expires += now if new_expires
+      result = super(keys, options)
+      delete = []
+      store = {}
+      result.each do |key, entry|
+        next if entry == nil
+        value, expires = entry
+        if expires && now > expires
+          delete << key
+          result[key] = nil
+        else
+          store[key] = [value, new_expires] if new_expires
+          result[key] = value
+        end
+      end
+      @adapter.delete_multi(delete, options) unless delete.empty?
+      @adapter.store_multi(store, options) unless store.empty?
+      result
+    end
+
     # (see Proxy#store)
     def store(key, value, options = {})
       return super if options.include?(:raw)
@@ -44,11 +69,45 @@ module Moneta
       value
     end
 
+    # (see Proxy#store_multi)
+    def store_multi(entries, options = {})
+      return super if options.include?(:raw)
+      expires = options.include?(:expires) && (options = options.dup; options.delete(:expires))
+      if expires ||= @expires
+        expires += Time.now.to_i
+        e = {}
+        entries.each {|key, value| e[key] = [value, expires] }
+        super(e, options)
+      else
+        e = {}
+        entries.each {|key, value| e[key] = Array === value || value == nil ? [value] : value }
+        super(e, options)
+      end
+      entries
+    end
+
     # (see Proxy#delete)
     def delete(key, options = {})
       return super if options.include?(:raw)
       value, expires = super
       value if !expires || Time.now.to_i <= expires
+    end
+
+    # (see Proxy#delete_multi)
+    def delete_multi(keys, options = {})
+      return super if options.include?(:raw)
+      now = Time.now.to_i
+      result = super(keys, options)
+      result.each do |key, entry|
+        next if entry == nil
+        value, expires = entry
+        if expires && now > expires
+          result[key] = nil
+        else
+          result[key] = value
+        end
+      end
+      result
     end
 
     private

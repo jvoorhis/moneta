@@ -29,6 +29,12 @@ module Moneta
         read_result
       end
 
+      # (see Proxy#load_multi)
+      def load_multi(keys, options = {})
+        write(@socket, [:load_multi, keys, options])
+        read_result
+      end
+
       # (see Proxy#store)
       def store(key, value, options = {})
         write(@socket, [:store, key, value, options])
@@ -36,9 +42,22 @@ module Moneta
         value
       end
 
+      # (see Proxy#store_multi)
+      def store_multi(entries, options = {})
+        write(@socket, [:store_multi, entries, options])
+        read_result
+        entries
+      end
+
       # (see Proxy#delete)
       def delete(key, options = {})
         write(@socket, [:delete, key, options])
+        read_result
+      end
+
+      # (see Proxy#delete_multi)
+      def delete_multi(keys, options = {})
+        write(@socket, [:delete_multi, keys, options])
         read_result
       end
 

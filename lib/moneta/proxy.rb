@@ -41,6 +41,11 @@ module Moneta
       adapter.load(key, options)
     end
 
+    # (see BatchSupport#load_multi)
+    def load_multi(keys, options = {})
+      @adapter.load_multi(keys, options)
+    end
+
     # Store value with key
     #
     # @param [Object] key
@@ -56,6 +61,11 @@ module Moneta
       adapter.store(key, value, options)
     end
 
+    # (see BatchSupport#store_multi)
+    def store_multi(entries, options = {})
+      @adapter.store_multi(entries, options)
+    end
+
     # Delete the key from the store and return the current value
     #
     # @param [Object] key
@@ -67,6 +77,11 @@ module Moneta
     # @api public
     def delete(key, options = {})
       adapter.delete(key, options)
+    end
+
+    # (see BatchSupport#delete_multi)
+    def delete_multi(keys, options = {})
+      @adapter.delete_multi(keys, options)
     end
 
     # Clear all keys in this store

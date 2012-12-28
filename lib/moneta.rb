@@ -1,4 +1,5 @@
 module Moneta
+  autoload :BatchSupport,      'moneta/mixins'
   autoload :Builder,           'moneta/builder'
   autoload :Cache,             'moneta/cache'
   autoload :Defaults,          'moneta/mixins'

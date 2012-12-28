@@ -33,6 +33,11 @@ module Moneta
         value
       end
 
+      # (see Proxy#load_multi)
+      def load_multi(keys, options = {})
+        @redis.mget(*keys, options)
+      end
+
       # (see Proxy#store)
       def store(key, value, options = {})
         if expires = expires_value(options)
@@ -43,12 +48,31 @@ module Moneta
         value
       end
 
+      # (see Proxy#store_multi)
+      def store_multi(entries, options = {})
+        if options[:expires] || @expires
+          # There is no msetex
+          entries.each do |key, value|
+            store(key, value, options)
+          end
+        else
+          @redis.mset(entries)
+        end
+      end
+
       # (see Proxy#delete)
       def delete(key, options = {})
         if value = load(key, options)
           @redis.del(key)
           value
         end
+      end
+
+      # (see Proxy#delete_multi)
+      def delete_multi(keys, options = {})
+        result = load_multi(keys, options)
+        @redis.del(*keys)
+        result
       end
 
       # (see Proxy#increment)

@@ -24,7 +24,9 @@ module Moneta
     def raw
       @raw_store ||=
         begin
-          store = with(:raw => true, :only => [:load, :store, :delete])
+          store = with(:raw => true, :only => [:load, :load_multi,
+                                               :store, :store_multi,
+                                               :delete, :delete_multi])
           store.instance_variable_set(:@raw_store, store)
           store
         end
@@ -45,7 +47,45 @@ module Moneta
     # @return [OptionMerger]
     # @api public
     def expires(expires)
-      with(:expires => expires, :only => [:store, :increment])
+      with(:expires => expires, :only => [:store, :store_multi, :increment])
+    end
+  end
+
+  # @api private
+  module BatchSupport
+    # Load multiple keys at once
+    #
+    # @param [Array] keys Array of keys
+    # @param [Hash] options Option hash
+    # @return [Hash] Key/value hash
+    # @api public
+    def load_multi(keys, options = {})
+      entries = {}
+      keys.each { |key| entries[key] = load(key, options) }
+      entries
+    end
+
+    # Store multiple key/value entries at once
+    #
+    # @param [Hash] entries Key/value hash
+    # @param [Hash] options Option hash
+    # @return [Hash] Key/value hash
+    # @api public
+    def store_multi(entries, options = {})
+      entries.each { |key, value| store(key, value, options) }
+      entries
+    end
+
+    # Delete multiple keys at once
+    #
+    # @param [Array] keys Array of keys
+    # @param [Hash] options Option hash
+    # @return [Hash] Key/value hash
+    # @api public
+    def delete_multi(keys, options = {})
+      entries = {}
+      keys.each { |key| entries[key] = delete(key, options) }
+      entries
     end
   end
 
@@ -53,6 +93,7 @@ module Moneta
   # @api public
   module Defaults
     include OptionSupport
+    include BatchSupport
 
     # Exists the value with key
     #

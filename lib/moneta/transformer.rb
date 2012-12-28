@@ -84,13 +84,34 @@ module Moneta
             options.include?(:raw) && (options = options.dup; options.delete(:raw))
             @adapter.load(#{key}, options)
           end
+          def load_multi(keys, options = {})
+            options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            keymap, result = {}, {}
+            keys.each {|key| keymap[#{key}] = key }
+            @adapter.load_multi(keymap.keys, options).each { |key,value| result[keymap[key]] = value }
+            result
+          end
           def store(key, value, options = {})
             options.include?(:raw) && (options = options.dup; options.delete(:raw))
             @adapter.store(#{key}, value, options)
           end
+          def store_multi(entries, options = {})
+            options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            e = {}
+            entries.each { |key, value| e[#{key}] = value }
+            @adapter.store_multi(e, options)
+            entries
+          end
           def delete(key, options = {})
             options.include?(:raw) && (options = options.dup; options.delete(:raw))
             @adapter.delete(#{key}, options)
+          end
+          def delete_multi(keys, options = {})
+            options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            keymap, result = {}, {}
+            keys.each {|key| keymap[#{key}] = key }
+            @adapter.delete_multi(keymap.keys, options).each { |key,value| result[keymap[key]] = value }
+            result
           end
         end_eval
       end
@@ -102,15 +123,37 @@ module Moneta
             value = @adapter.load(key, options)
             value && !raw ? #{load} : value
           end
+          def load_multi(keys, options = {})
+            raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            result = @adapter.load_multi(keys, options)
+            result.each { |key,value| result[key] = #{load} } unless raw
+            result
+          end
           def store(key, value, options = {})
             raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
             @adapter.store(key, raw ? value : #{dump}, options)
             value
           end
+          def store_multi(entries, options = {})
+            if options.include?(:raw) && (options = options.dup; options.delete(:raw))
+              @adapter.store_multi(entries, options)
+            else
+              e = {}
+              entries.each { |key, value| e[key] = #{dump} }
+              @adapter.store_multi(e, options)
+              entries
+            end
+          end
           def delete(key, options = {})
             raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
             value = @adapter.delete(key, options)
             value && !raw ? #{load} : value
+          end
+          def delete_multi(keys, options = {})
+            raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            result = @adapter.delete_multi(keys, options)
+            result.each { |key, value| result[key] = #{load} } unless raw
+            result
           end
         end_eval
       end
@@ -128,15 +171,36 @@ module Moneta
             value = @adapter.load(#{key}, options)
             value && !raw ? #{load} : value
           end
+          def load_multi(keys, options = {})
+            raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            keymap, result = {}, {}
+            keys.each {|key| keymap[#{key}] = key }
+            @adapter.load_multi(keymap.keys, options).each { |key,value| result[keymap[key]] = value && !raw ? #{load} : value }
+            result
+          end
           def store(key, value, options = {})
             raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
             @adapter.store(#{key}, raw ? value : #{dump}, options)
             value
           end
+          def store_multi(entries, options = {})
+            raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            e = {}
+            entries.each { |key, value| e[#{key}] = raw ? value : #{dump} }
+            @adapter.store_multi(e, options)
+            entries
+          end
           def delete(key, options = {})
             raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
             value = @adapter.delete(#{key}, options)
             value && !raw ? #{load} : value
+          end
+          def delete_multi(keys, options = {})
+            raw = options.include?(:raw) && (options = options.dup; options.delete(:raw))
+            keymap, result = {}, {}
+            keys.each {|key| keymap[#{key}] = key }
+            @adapter.delete_multi(keymap.keys, options).each { |key,value| result[keymap[key]] = value && !raw ? #{load} : value }
+            result
           end
         end_eval
       end

@@ -35,6 +35,17 @@ module Moneta
       rescue ::Memcached::NotFound
       end
 
+      # (see Proxy#load_multi)
+      def load_multi(keys, options = {})
+        result = @cache.get(*keys)
+        result.each do |key, value|
+          store(key, value, options)
+        end if options.include?(:expires)
+        result
+      rescue ::Memcached::NotFound
+        super # Do it the slow way, if we didn't find some keys
+      end
+
       # (see Proxy#store)
       def store(key, value, options = {})
         # TTL must be Fixnum

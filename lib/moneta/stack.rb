@@ -54,10 +54,20 @@ module Moneta
       nil
     end
 
+    # (see Proxy#load_multi)
+    def load_multi(keys, options = {})
+    end
+
     # (see Proxy#store)
     def store(key, value, options = {})
       @stack.each {|s| s.store(key, value, options) }
       value
+    end
+
+    # (see Proxy#store_multi)
+    def store_multi(entries, options = {})
+      @stack.each {|s| s.store_multi(entries, options) }
+      entries
     end
 
     # (see Proxy#increment)
@@ -73,6 +83,10 @@ module Moneta
         v = s.delete(key, options)
         value || v
       end
+    end
+
+    # (see Proxy#delete_multi)
+    def delete_multi(keys, options = {})
     end
 
     # (see Proxy#clear)
